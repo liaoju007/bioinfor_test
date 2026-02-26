@@ -37,3 +37,11 @@ jobs:
           # 只有当文件有变动时才提交，防止报错
           git commit -m "自动更新: 收录最新生信文献" || echo "今天没有新的高分文献"
           git push
+          - name: 自动把数据快递到腾讯云服务器
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "ai_aggregator_database.csv"
+          target: "/root/bio_ai_app/"
