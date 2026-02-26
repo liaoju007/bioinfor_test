@@ -1,0 +1,39 @@
+name: Daily Bio-AI Aggregator
+
+on:
+  schedule:
+    # 每天 UTC 时间 18:00 执行（对应北京时间凌晨 02:00）
+    - cron: '0 18 * * *' 
+  workflow_dispatch: # 这个配置允许我们手动点击按钮随时运行！
+
+jobs:
+  run-aggregator:
+    runs-on: ubuntu-latest # 使用 GitHub 提供的免费 Linux 服务器
+    
+    steps:
+      - name: 检出代码 (Checkout Repo)
+        uses: actions/checkout@v4
+
+      - name: 配置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 安装依赖包
+        run: |
+          pip install pandas biopython google-genai
+
+      - name: 运行 AI 抓取与分析引擎
+        env:
+           # 从保险箱中取出 Key 喂给代码
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python ai_aggregator_main.py
+
+      - name: 提交并推送新数据到仓库
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ai_aggregator_database.csv downloaded_pmids.txt
+          # 只有当文件有变动时才提交，防止报错
+          git commit -m "自动更新: 收录最新生信文献" || echo "今天没有新的高分文献"
+          git push
