@@ -1,15 +1,12 @@
-name: Daily Bio-AI Aggregator
-
 on:
   schedule:
     # 每天 UTC 时间 18:00 执行（对应北京时间凌晨 02:00）
-    - cron: '0 18 * * *' 
+    - cron: '0 18 * * *'
   workflow_dispatch: # 这个配置允许我们手动点击按钮随时运行！
 
 jobs:
   run-aggregator:
     runs-on: ubuntu-latest # 使用 GitHub 提供的免费 Linux 服务器
-    
     steps:
       - name: 检出代码 (Checkout Repo)
         uses: actions/checkout@v4
@@ -25,7 +22,7 @@ jobs:
 
       - name: 运行 AI 抓取与分析引擎
         env:
-           # 从保险箱中取出 Key 喂给代码
+          # 从保险箱中取出 Key 喂给代码
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python ai_aggregator_main.py
 
@@ -37,7 +34,8 @@ jobs:
           # 只有当文件有变动时才提交，防止报错
           git commit -m "自动更新: 收录最新生信文献" || echo "今天没有新的高分文献"
           git push
-          - name: 自动把数据快递到腾讯云服务器
+
+      - name: 自动把数据快递到腾讯云服务器
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SERVER_IP }}
